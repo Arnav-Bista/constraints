@@ -64,7 +64,7 @@ fn main() {
         0.5,
         50
     );
-    ga.run(500);
+    ga.run(100);
 }
 
 fn write_random_cities(file: String, number: usize) {
@@ -77,8 +77,9 @@ fn write_random_cities(file: String, number: usize) {
         }
     };
     let mut buffer = BufWriter::with_capacity(number, file);
-    let hashset: collections::HashSet<(u32,u32)> = collections::HashSet::new();
-    for i in 0..number {
+    let mut hashset: collections::HashSet<(u32,u32)> = collections::HashSet::new();
+    let mut i = 0;
+    while i < number {
         let numbers = (rng.gen_range(0..100),rng.gen_range(0..100));
         if hashset.contains(&numbers) {
             i -= 1;
@@ -93,6 +94,7 @@ fn write_random_cities(file: String, number: usize) {
                 return;
             }
         }
+
     }
     println!("{}", "Done!".green());
 }
@@ -135,7 +137,7 @@ fn read_random_cities(file: String) -> Result<Vec<(u32,u32)>, Error> {
         }
         result_vec.push((array[0],array[1]));
     }
-    
+
 
     Ok(result_vec)
 }

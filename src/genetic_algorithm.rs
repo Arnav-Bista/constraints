@@ -1,5 +1,7 @@
-use rand::{thread_rng, Rng};
+use rand::thread_rng;
 use rand::seq::SliceRandom;
+use rand::prelude::*;
+use rand_distr::WeightedAliasIndex;
 use std::collections::{HashSet, self};
 
 #[derive(Clone)]
@@ -43,11 +45,12 @@ impl Candidate {
             }
             else {
                 self.fitness += f32::sqrt(
-                    f32::powi((cities[*index].0 - prev.0) as f32, 2) - 
-                    f32::powi((cities[*index].0 - prev.0) as f32, 2));
+                    f32::powi(cities[*index].0 as f32 - prev.0 as f32, 2) + 
+                    f32::powi(cities[*index].1 as f32 - prev.1 as f32, 2));
+                prev = cities[*index];
             }
         }
-        self.fitness = 1.0 / self.fitness;
+        self.fitness = self.fitness / 10000.0;
         self.fitness
     }
 }
@@ -118,8 +121,25 @@ impl GaData {
         }
         self.all_time_best = self.current_best.clone();
     }
+    
+    // More of a Weighted Random Selection
+    fn roulette_wheel_selection(&mut self) -> Vec<Candidate> {
+        let mut res: Vec<Candidate> = Vec::new();
+        let mut weights = vec![0.0;self.population_count as usize];
+        for (i,candidate) in self.population.iter().enumerate() {
+            weights[i] = candidate.fitness();
+        }
 
-    fn mate(&mut self, parent_1: Candidate, parent_2: Candidate) -> Candidate {
+        let dist = WeightedAliasIndex::new(weights).unwrap();
+        let mut rng = rand::thread_rng();
+        for _ in 0..self.population_count / 4 {
+            res.push(self.population[dist.sample(&mut rng)].clone());
+        }
+
+        res
+    }
+
+    fn order_crossover(&mut self, parent_1: &Candidate, parent_2: &Candidate) -> Candidate {
         // Order Crossover
         let mut rng = rand::thread_rng();
         let mut i: usize;
@@ -139,24 +159,70 @@ impl GaData {
 
         let mut offspring = Candidate::empty();
         let mut hashset: collections::HashSet<usize> = collections::HashSet::new();
-        offspring.chromozones = (0..self.cities.len() - 1).collect();
+        // offspring.chromozones = (0..self.cities.len()).collect();
+        offspring.chromozones = vec![99; self.cities.len()];
         
         for k in i..j {
             offspring.chromozones[k] = parent_1.chromozones[k];
             hashset.insert(offspring.chromozones[k]);
         }
-
+        let mut child_index = 0;
+        // println!("{:?}", parent_2.chromozones);
+        // println!("===");
+        // println!("{:?}", offspring.chromozones);
+        for k in &parent_2.chromozones {
+            // println!("{:?} {} {}",offspring.chromozones, k, hashset.contains(&k));
+            if !hashset.contains(&k) {
+                if i <= child_index && child_index < j  {
+                    child_index = j;
+                }
+                offspring.chromozones[child_index] = *k;
+                // if child_index == 10 {
+                //     println!("{:?} {} {}",offspring.chromozones, k, hashset.contains(&k));
+                // }
+                child_index += 1;
+            }
+        }
+        offspring.calcualte_fitness(&self.cities);
         offspring
+    }
 
+    fn mutate(&mut self, offspring: &mut Candidate) {
+        let mut rng = rand::thread_rng();
+        if rng.gen::<f32>() < self.mutation_rate {
+            let mut i: usize;
+            let mut j: usize;
+            loop {
+                i = rng.gen_range(0..self.cities.len());
+                j = rng.gen_range(0..self.cities.len());
+                if i != j {
+                    break;
+                }
+            }
+            offspring.chromozones.swap(i, j);
+        }
     }
 
     pub fn run(&mut self, iteration_limit: u32) {
         self.populate();
+        let mut rng = rand::thread_rng();
+        println!("Initial Fitness:\t{}",self.all_time_best.fitness());
         for i in 0..iteration_limit {
             self.iteration = i;
             self.quick_sort(0, (self.population.len() - 1) as isize);
-
-
+            println!("Gen {}\t Current {}\tBest {}", i, self.population[0].fitness(), self.all_time_best.fitness());
+            if self.population[0].fitness() > self.all_time_best.fitness() {
+                self.all_time_best = self.population[0].clone();
+            }
+            let selection = self.roulette_wheel_selection();
+            self.population = Vec::new();
+            for _ in 0..4 {
+                for __ in 0..selection.len() {
+                    let mut offspring = self.order_crossover(selection.choose(&mut rng).unwrap(),selection.choose(&mut rng).unwrap());
+                    self.mutate(&mut offspring);
+                    self.population.push(offspring);
+                }
+            }
         }
     }
 }
