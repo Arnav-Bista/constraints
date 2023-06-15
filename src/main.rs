@@ -5,6 +5,7 @@ use std::collections::HashSet;
 use rand::Rng;
 use getopts::Options;
 use colored::Colorize;
+use plotters::prelude::*;
 
 mod genetic_algorithm;
 
@@ -62,9 +63,32 @@ fn main() {
         cities,
         5000,
         0.5,
-        50
+        30
     );
-    ga.run(100);
+    ga.run(130);
+
+    let root_area = BitMapBackend::new("./res.png", (600, 400))
+        .into_drawing_area();
+    root_area.fill(&WHITE).unwrap();
+
+    let mut ctx = ChartBuilder::on(&root_area)
+        .set_label_area_size(LabelAreaPosition::Left, 40)
+        .set_label_area_size(LabelAreaPosition::Bottom, 40)
+        .caption("Solution", ("sans-serif", 40))
+        .build_cartesian_2d(0..100, 0..100)
+        .unwrap();
+
+    ctx.configure_mesh().draw().unwrap();
+    
+    ga.prepare_graph_data();
+
+    ctx.draw_series(LineSeries::new(
+        ga.get_all_time_best().chromozones.iter().map(|x| ga.get_city(*x)),
+        &BLUE,
+    ))
+    .unwrap();
+
+    
 }
 
 fn write_random_cities(file: String, number: usize) {
@@ -82,7 +106,6 @@ fn write_random_cities(file: String, number: usize) {
     while i < number {
         let numbers = (rng.gen_range(0..100),rng.gen_range(0..100));
         if hashset.contains(&numbers) {
-            i -= 1;
             continue;
         }
         hashset.insert(numbers);
@@ -94,7 +117,7 @@ fn write_random_cities(file: String, number: usize) {
                 return;
             }
         }
-
+        i += 1;
     }
     println!("{}", "Done!".green());
 }
