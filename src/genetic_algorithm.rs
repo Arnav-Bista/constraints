@@ -75,7 +75,7 @@ pub struct GaData {
 
 impl GaData {
     pub fn new(cities: Vec<(u32,u32)>, population_count: u32, mutation_rate: f32, truncation: u32) -> Self {
-        let mut rng = rand::thread_rng();
+        let rng = rand::thread_rng();
         Self {
             cities,
             iteration: 0,
@@ -336,7 +336,7 @@ impl GaData {
     pub fn run(&mut self, iteration_limit: u32) {
         self.populate();
 
-        let mut root = BitMapBackend::new("plot.png", (800, 600)).into_drawing_area();
+        let root = BitMapBackend::new("plot.png", (800, 600)).into_drawing_area();
         root.fill(&WHITE).unwrap();
 
 

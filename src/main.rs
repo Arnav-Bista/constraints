@@ -64,20 +64,12 @@ fn main() {
         30
     );
 
-    ga.set_active_plotting(true);
+    ga.set_active_plotting(false);
     ga.run(130);
 
     
     
     ga.prepare_graph_data();
-
-    // ctx.draw_series(LineSeries::new(
-    //     ga.get_all_time_best().chromozones.iter().map(|x| ga.get_city(*x)),
-    //     &BLUE,
-    // ))
-    // .unwrap();
-
-    
 }
 
 fn write_random_cities(file: String, number: usize) {
