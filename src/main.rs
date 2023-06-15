@@ -1,11 +1,9 @@
 use std::{env, collections};
 use std::fs::File;
 use std::io::{BufWriter, BufReader, Write, Error, BufRead};
-use std::collections::HashSet;
 use rand::Rng;
 use getopts::Options;
 use colored::Colorize;
-use plotters::prelude::*;
 
 mod genetic_algorithm;
 
@@ -65,28 +63,19 @@ fn main() {
         0.5,
         30
     );
+
+    ga.set_active_plotting(true);
     ga.run(130);
 
-    let root_area = BitMapBackend::new("./res.png", (600, 400))
-        .into_drawing_area();
-    root_area.fill(&WHITE).unwrap();
-
-    let mut ctx = ChartBuilder::on(&root_area)
-        .set_label_area_size(LabelAreaPosition::Left, 40)
-        .set_label_area_size(LabelAreaPosition::Bottom, 40)
-        .caption("Solution", ("sans-serif", 40))
-        .build_cartesian_2d(0..100, 0..100)
-        .unwrap();
-
-    ctx.configure_mesh().draw().unwrap();
+    
     
     ga.prepare_graph_data();
 
-    ctx.draw_series(LineSeries::new(
-        ga.get_all_time_best().chromozones.iter().map(|x| ga.get_city(*x)),
-        &BLUE,
-    ))
-    .unwrap();
+    // ctx.draw_series(LineSeries::new(
+    //     ga.get_all_time_best().chromozones.iter().map(|x| ga.get_city(*x)),
+    //     &BLUE,
+    // ))
+    // .unwrap();
 
     
 }

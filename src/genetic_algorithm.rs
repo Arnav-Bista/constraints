@@ -1,5 +1,6 @@
 use std::collections::{HashSet, HashMap};
 use rand::thread_rng;
+use plotters::prelude::*;
 use rand::seq::SliceRandom;
 use rand::prelude::*;
 use rand_distr::WeightedAliasIndex;
@@ -68,7 +69,8 @@ pub struct GaData {
     population: Vec<Candidate>,
     mutation_rate: f32,
     truncation: u32,
-    rng: ThreadRng
+    rng: ThreadRng,
+    active_plotting: bool
 }
 
 impl GaData {
@@ -83,7 +85,8 @@ impl GaData {
             population: Vec::new(),
             mutation_rate,
             truncation,
-            rng
+            rng,
+            active_plotting: false
         }
     }
 
@@ -96,8 +99,13 @@ impl GaData {
         &self.all_time_best
     }
 
+
     pub fn prepare_graph_data(&mut self) {
         self.all_time_best.chromozones.push(self.all_time_best.chromozones[0]);
+    }
+
+    pub fn set_active_plotting(&mut self, plotting: bool) {
+        self.active_plotting = plotting;
     }
 
     pub fn quick_sort(&mut self, low: isize, high: isize) {
@@ -327,6 +335,17 @@ impl GaData {
 
     pub fn run(&mut self, iteration_limit: u32) {
         self.populate();
+
+        let mut root = BitMapBackend::new("plot.png", (800, 600)).into_drawing_area();
+        root.fill(&WHITE).unwrap();
+
+
+        let mut chart = ChartBuilder::on(&root)
+            .x_label_area_size(40)
+            .y_label_area_size(40)
+            .build_cartesian_2d(0.0..100.0, -1.5..1.5)
+            .unwrap();
+
         println!("Initial Fitness:\t{}",self.all_time_best.fitness());
         for i in 0..iteration_limit {
             self.iteration = i;
@@ -338,6 +357,20 @@ impl GaData {
                 self.population[self.population_count as usize - 1].fitness(), 
                 self.all_time_best.fitness()
             );
+
+            if self.active_plotting {
+                chart.plotting_area().fill(&WHITE).unwrap();
+                let mut current_plotting_data: Vec<(u32,u32)> = self.current_best.chromozones.iter().map(|x| self.cities[*x]).collect();
+                let mut best_plotting_data: Vec<(u32,u32)> = self.all_time_best.chromozones.iter().map(|x| self.cities[*x]).collect();
+                current_plotting_data.push(self.cities[self.current_best.chromozones[0]]);
+                best_plotting_data.push(self.cities[self.all_time_best.chromozones[0]]);
+                chart.draw_series(LineSeries::new(
+                    best_plotting_data.iter().map(|&(x,y)| (x as f64, y as f64)),
+                    &RED
+                ))
+                .unwrap();
+                root.present().unwrap();
+            }
 
             if self.population[self.population_count as usize - 1].fitness() > self.all_time_best.fitness() {
                 self.all_time_best = self.population[self.population_count as usize - 1].clone();
