@@ -1,64 +1,9 @@
 use std::collections::{HashSet, HashMap};
-use rand::thread_rng;
-use plotters::prelude::*;
 use rand::seq::SliceRandom;
 use rand::prelude::*;
 use rand_distr::WeightedAliasIndex;
 
-#[derive(Clone)]
-pub struct Candidate {
-    pub chromozones: Vec<usize>,
-    fitness: f32
-}
-
-impl Candidate {
-
-    pub fn new(cities: &Vec<(u32,u32)>) -> Self {
-        let mut chromozones: Vec<usize> = (0..cities.len()).collect();
-        chromozones.shuffle(&mut thread_rng());
-        let mut candidate = Self {
-            chromozones,
-            fitness: 0.0
-        };
-        candidate.calcualte_fitness(cities);
-        candidate
-    }
-
-    pub fn empty() -> Self {
-        Self {
-            chromozones: Vec::new(),
-            fitness: 0.0
-        }
-    }
-
-    pub fn fitness(&self) -> f32 {
-        self.fitness
-    }
-
-    pub fn calcualte_fitness(&mut self, cities: &Vec<(u32,u32)>) -> f32 {
-        self.fitness = 0.0;
-        let mut prev: (u32,u32) = (0,0);
-        let mut prev_updated = false;
-        for index in &self.chromozones {
-            if !prev_updated {
-                prev = cities[*index];
-                prev_updated = true;
-            }
-            else {
-                self.fitness += f32::sqrt(
-                    f32::powi(cities[*index].0 as f32 - prev.0 as f32, 2) + 
-                    f32::powi(cities[*index].1 as f32 - prev.1 as f32, 2));
-                prev = cities[*index];
-            }
-        }
-
-        self.fitness += f32::sqrt(
-            f32::powi(cities[0].0 as f32 - cities[cities.len() - 1].0 as f32, 2) + 
-            f32::powi(cities[0].1 as f32 - cities[cities.len() - 1].1 as f32, 2));
-        self.fitness = 1.0 / self.fitness * 1000.0;
-        self.fitness
-    }
-}
+use crate::candidate::Candidate;
 
 pub struct GaData {
     cities: Vec<(u32,u32)>,
@@ -123,7 +68,7 @@ impl GaData {
 
         loop {
             store_index += 1;
-            while self.population[store_index as usize].fitness < self.population[pivot].fitness() {
+            while self.population[store_index as usize].fitness() < self.population[pivot].fitness() {
                 store_index += 1;
             }
             last_index -= 1;
@@ -218,7 +163,6 @@ impl GaData {
     }
 
     fn order_crossover(&mut self, parent_1: &Candidate, parent_2: &Candidate) -> Candidate {
-        // Order Crossover
         let mut i: usize;
         let mut j: usize;
         loop {
@@ -236,7 +180,6 @@ impl GaData {
 
         let mut offspring = Candidate::empty();
         let mut hashset: HashSet<usize> = HashSet::new();
-        // offspring.chromozones = (0..self.cities.len()).collect();
         offspring.chromozones = vec![99; self.cities.len()];
 
         for k in i..j {
@@ -244,19 +187,12 @@ impl GaData {
             hashset.insert(offspring.chromozones[k]);
         }
         let mut child_index = 0;
-        // println!("{:?}", parent_2.chromozones);
-        // println!("===");
-        // println!("{:?}", offspring.chromozones);
         for k in &parent_2.chromozones {
-            // println!("{:?} {} {}",offspring.chromozones, k, hashset.contains(&k));
             if !hashset.contains(&k) {
                 if i <= child_index && child_index < j  {
                     child_index = j;
                 }
                 offspring.chromozones[child_index] = *k;
-                // if child_index == 10 {
-                //     println!("{:?} {} {}",offspring.chromozones, k, hashset.contains(&k));
-                // }
                 child_index += 1;
             }
         }
@@ -336,16 +272,6 @@ impl GaData {
     pub fn run(&mut self, iteration_limit: u32) {
         self.populate();
 
-        let root = BitMapBackend::new("plot.png", (800, 600)).into_drawing_area();
-        root.fill(&WHITE).unwrap();
-
-
-        let mut chart = ChartBuilder::on(&root)
-            .x_label_area_size(40)
-            .y_label_area_size(40)
-            .build_cartesian_2d(0.0..100.0, -1.5..1.5)
-            .unwrap();
-
         println!("Initial Fitness:\t{}",self.all_time_best.fitness());
         for i in 0..iteration_limit {
             self.iteration = i;
@@ -357,20 +283,6 @@ impl GaData {
                 self.population[self.population_count as usize - 1].fitness(), 
                 self.all_time_best.fitness()
             );
-
-            if self.active_plotting {
-                chart.plotting_area().fill(&WHITE).unwrap();
-                let mut current_plotting_data: Vec<(u32,u32)> = self.current_best.chromozones.iter().map(|x| self.cities[*x]).collect();
-                let mut best_plotting_data: Vec<(u32,u32)> = self.all_time_best.chromozones.iter().map(|x| self.cities[*x]).collect();
-                current_plotting_data.push(self.cities[self.current_best.chromozones[0]]);
-                best_plotting_data.push(self.cities[self.all_time_best.chromozones[0]]);
-                chart.draw_series(LineSeries::new(
-                    best_plotting_data.iter().map(|&(x,y)| (x as f64, y as f64)),
-                    &RED
-                ))
-                .unwrap();
-                root.present().unwrap();
-            }
 
             if self.population[self.population_count as usize - 1].fitness() > self.all_time_best.fitness() {
                 self.all_time_best = self.population[self.population_count as usize - 1].clone();
