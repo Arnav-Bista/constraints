@@ -3,6 +3,8 @@ use rand::seq::SliceRandom;
 use rand::prelude::*;
 use rand_distr::WeightedAliasIndex;
 
+use nannou::prelude::*;
+
 use crate::candidate::Candidate;
 
 pub struct GaData {
@@ -85,7 +87,7 @@ impl GaData {
         store_index
     }
 
-    fn populate(&mut self) {
+    pub fn populate(&mut self) {
         for i in 0..self.population_count {
             self.population.push(Candidate::new(&self.cities));
             if self.population[i as usize].fitness() > self.current_best.fitness() {
@@ -269,6 +271,30 @@ impl GaData {
         }
     }
 
+    pub fn iterate(&mut self) {
+        self.iteration += 1;
+        self.quick_sort(0, self.population_count as isize - 1);
+        println!(
+            "Gen {}\t Current {:.8}\tBest {:.8}",
+            self.iteration,
+            self.population[self.population_count as usize - 1].fitness(), 
+            self.all_time_best.fitness()
+        );
+        if self.population[self.population_count as usize - 1].fitness() > self.all_time_best.fitness() {
+            self.all_time_best = self.population[self.population_count as usize - 1].clone();
+        }
+        else {
+            self.population[self.population_count as usize - 1] = self.all_time_best.clone();
+        }
+
+        let selection: Vec<Candidate>;
+        selection = self.truncation_selection();
+        // selection = self.roulette_wheel_selection();
+        self.population = Vec::with_capacity(self.population_count as usize);
+        // self.exploitative_repopulation(selection);
+        self.explorative_repopulation(selection);
+    }
+
     pub fn run(&mut self, iteration_limit: u32) {
         self.populate();
 
@@ -300,5 +326,4 @@ impl GaData {
         }
     }
 }
-
 

@@ -1,5 +1,6 @@
 use getopts::Options;
 use std::env;
+use nannou::prelude::*;
 
 mod genetic_algorithm;
 mod candidate;
@@ -63,12 +64,9 @@ fn main() {
         0.5,
         30
     );
+    //
+    // ga.set_active_plotting(true);
+    // ga.run(3);
 
-    ga.set_active_plotting(true);
-    ga.run(3);
-
-    
-    
-    ga.prepare_graph_data();
 }
 
