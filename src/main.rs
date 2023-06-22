@@ -1,7 +1,7 @@
 use getopts::Options;
 use std::env;
-use nannou::prelude::*;
-use std::process;
+use nannou::{prelude::*, text::Font};
+
 
 
 mod genetic_algorithm;
@@ -162,6 +162,24 @@ fn view(app: &App, _model: &Model, frame: Frame) {
         .end(normalize_point(_model, _model.ga.get_best_chromozone(0)).into())
         .weight(3.0)
         .color(RED);
+
+    // text
+    let margin_top = 20.0;
+    let margin_left = 40.0;
+
+    
+    if _model.pause {
+        draw.text("Paused")
+        .font_size(16)
+        .x_y( -(_model.screen_x / 2.0) + margin_left, (_model.screen_y / 2.0) - margin_top)
+        .color(BLACK);
+    }
+
+    draw.text(format!("Gen: {}", _model.ga.get_iteration()).as_str())
+        .font_size(16)
+        .x_y( (_model.screen_x / 2.0) - margin_left, (_model.screen_y / 2.0) - margin_top)
+        .color(BLACK);
+
 
     draw.to_frame(app, &frame).unwrap();
 }
