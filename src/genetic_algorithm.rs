@@ -3,7 +3,7 @@ use rand::seq::SliceRandom;
 use rand::prelude::*;
 use rand_distr::WeightedAliasIndex;
 
-use nannou::prelude::*;
+
 
 use crate::candidate::Candidate;
 
@@ -42,10 +42,21 @@ impl GaData {
 
     }
 
+    pub fn get_city_size(&self) -> usize {
+        self.cities.len()
+    }
+
     pub fn get_all_time_best(&self) -> &Candidate {
         &self.all_time_best
     }
+    
+    pub fn get_best_chromozone(&self, index: usize) -> (u32,u32) {
+        self.cities[self.all_time_best.chromozones[index]]    
+    }
 
+    pub fn get_current_chromozone(&self, index: usize) -> (u32,u32) {
+        self.cities[self.current_best.chromozones[index]]    
+    }
 
     pub fn prepare_graph_data(&mut self) {
         self.all_time_best.chromozones.push(self.all_time_best.chromozones[0]);
@@ -280,6 +291,9 @@ impl GaData {
             self.population[self.population_count as usize - 1].fitness(), 
             self.all_time_best.fitness()
         );
+
+        self.current_best = self.population[self.population_count as usize - 1].clone();
+
         if self.population[self.population_count as usize - 1].fitness() > self.all_time_best.fitness() {
             self.all_time_best = self.population[self.population_count as usize - 1].clone();
         }
