@@ -17,7 +17,6 @@ pub struct GaData {
     mutation_rate: f32,
     truncation: u32,
     rng: ThreadRng,
-    active_plotting: bool
 }
 
 impl GaData {
@@ -33,13 +32,16 @@ impl GaData {
             mutation_rate,
             truncation,
             rng,
-            active_plotting: false
         }
     }
 
     pub fn get_city(&self, index: usize) -> (i32,i32) {
         (self.cities[index].0 as i32, self.cities[index].1 as i32)
 
+    }
+    
+    pub fn get_iteration(&self) -> u32 {
+        self.iteration
     }
 
     pub fn get_city_size(&self) -> usize {
@@ -60,10 +62,6 @@ impl GaData {
 
     pub fn prepare_graph_data(&mut self) {
         self.all_time_best.chromozones.push(self.all_time_best.chromozones[0]);
-    }
-
-    pub fn set_active_plotting(&mut self, plotting: bool) {
-        self.active_plotting = plotting;
     }
 
     pub fn quick_sort(&mut self, low: isize, high: isize) {
@@ -300,7 +298,7 @@ impl GaData {
         else {
             self.population[self.population_count as usize - 1] = self.all_time_best.clone();
         }
-
+    
         let selection: Vec<Candidate>;
         selection = self.truncation_selection();
         // selection = self.roulette_wheel_selection();

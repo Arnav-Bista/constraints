@@ -38,7 +38,8 @@ fn main() {
 struct Model{
     ga: genetic_algorithm::GaData,
     screen_x: f32,
-    screen_y: f32
+    screen_y: f32,
+    pause: bool
 }
 
 fn model(_app: &App) -> Model {
@@ -94,18 +95,22 @@ fn model(_app: &App) -> Model {
     _app.new_window()
         .size(screen_x as u32,screen_y as u32)
         .title("Genetic Algorithm")
+        .key_pressed(key_pressed)
         .build()
         .unwrap();
 
     Model{
         ga,
         screen_x,
-        screen_y
+        screen_y,
+        pause: true 
     }
 }
 
 fn update(_app: &App, _model: &mut Model, _update: Update) {
-    _model.ga.iterate();
+    if !_model.pause {
+        _model.ga.iterate();
+    }
 }
 
 fn view(app: &App, _model: &Model, frame: Frame) {
@@ -116,7 +121,7 @@ fn view(app: &App, _model: &Model, frame: Frame) {
     let mut start_current =  normalize_point(_model, _model.ga.get_current_chromozone(0));
     
     draw.ellipse()
-        .x_y(start_best.0, start_best.1)
+        .x_y(start_best.0, start_best.1)        
         .radius(5.0)
         .color(BLACK);
 
@@ -141,13 +146,9 @@ fn view(app: &App, _model: &Model, frame: Frame) {
         draw.line()
             .start(start_best.into())
             .end(point_best.into())
-            .weight(4.0)
+            .weight(3.0)
             .color(RED);
         start_best = point_best;
-
-
-
-
     }
 
     draw.line()
@@ -159,11 +160,8 @@ fn view(app: &App, _model: &Model, frame: Frame) {
     draw.line()
         .start(start_best.into())
         .end(normalize_point(_model, _model.ga.get_best_chromozone(0)).into())
-        .weight(4.0)
+        .weight(3.0)
         .color(RED);
-
-
-
 
     draw.to_frame(app, &frame).unwrap();
 }
@@ -174,4 +172,18 @@ fn normalize(unit: u32, scale: f32) -> f32 {
 
 fn normalize_point(_model: &Model, point: (u32, u32)) -> (f32,f32) {
     (normalize(point.0, _model.screen_x), normalize(point.1, _model.screen_y))
+}
+
+fn key_pressed(app: &App, model: &mut Model, key: Key) {
+    match key {
+        Key::Space=> {
+            // Perform actions when Space key is pressed
+            model.pause = !model.pause
+        }
+        Key::Escape => {
+            // Perform actions when Escape key is pressed
+            app.quit();
+        }
+        _ => (),
+    }
 }

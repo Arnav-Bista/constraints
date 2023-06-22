@@ -49,8 +49,8 @@ impl Candidate {
         }
 
         self.fitness += f32::sqrt(
-            f32::powi(cities[0].0 as f32 - cities[cities.len() - 1].0 as f32, 2) + 
-            f32::powi(cities[0].1 as f32 - cities[cities.len() - 1].1 as f32, 2));
+            f32::powi(cities[self.chromozones[0]].0 as f32 - cities[self.chromozones[self.chromozones.len() - 1]].0 as f32, 2) + 
+            f32::powi(cities[self.chromozones[0]].1 as f32 - cities[self.chromozones[self.chromozones.len() - 1]].1 as f32, 2));
         self.fitness = 1.0 / self.fitness * 1000.0;
         self.fitness
     }
