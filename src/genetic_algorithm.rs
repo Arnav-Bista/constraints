@@ -191,7 +191,9 @@ impl GaData {
     }
 
     pub fn exploitative_repopulation(&mut self, selection: Vec<Candidate>) {
+        let mut filled: usize = 0;
         for _ in 0..self.population_count * (100 - self.truncation) / 100 {
+            filled += 1;
             // Fill the remaining 1 - turncation% of the population with offsprings
             let parent_1 = selection.choose(&mut self.rng).unwrap();
             let parent_2 = selection.choose(&mut self.rng).unwrap();
@@ -201,11 +203,12 @@ impl GaData {
         }
         // Then add the parent back
         for mut selected in selection {
+            filled += 1;
             self.mutate_parent(&mut selected);
             self.population.push(selected);
         }
         // If there are any space left
-        for _ in self.population.len()..self.population_count as usize {
+        for _ in filled..self.population_count as usize {
             self.population.push(Candidate::new(&self.cities));
         }
     }
@@ -252,9 +255,9 @@ impl GaData {
         if self.population[self.population_count as usize - 1].fitness() > self.all_time_best.fitness() {
             self.all_time_best = self.population[self.population_count as usize - 1].clone();
         }
-        // else {
-        //     self.population[self.population_count as usize - 1] = self.all_time_best.clone();
-        // }
+        else {
+            self.population[0] = self.all_time_best.clone();
+        }
     
         let selection: Vec<Candidate>;
 

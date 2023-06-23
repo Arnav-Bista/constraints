@@ -26,8 +26,9 @@ GENETIC PROCESS
 UI CONTROLS
     <SPACE>\t- Pause and unpause
     <ESC>\t- Terminate the program
-    s\t- Toggle explorative and exploitative [s]election
-    r\t- Toggle explorative and exploitative [r]epopulation";
+    s\t- Toggle explorative and exploitative [s]election.
+    r\t- Toggle explorative and exploitative [r]epopulation.
+    i\t- [I]terate. Iterate by one step. Only works while paused.";
 
 const DEFAULT_FILE : &str = "./data";
 
@@ -287,6 +288,11 @@ fn key_pressed(app: &App, model: &mut Model, key: Key) {
         }
         Key::R => model.ga.toggle_repopulation_strategy(),
         Key::S => model.ga.toggle_selection_strategy(),
+        Key::I => {
+            if model.pause {
+                model.ga.iterate();
+            }
+        }
         _ => (),
     }
 }
