@@ -1,4 +1,4 @@
-use std::collections::{HashSet, HashMap};
+use std::collections::HashSet;
 use rand::seq::SliceRandom;
 use rand::prelude::*;
 use rand_distr::WeightedAliasIndex;
@@ -17,6 +17,8 @@ pub struct GaData {
     mutation_rate: f32,
     truncation: u32,
     rng: ThreadRng,
+    exploit_selection: bool,
+    exploit_repopulation: bool,
 }
 
 impl GaData {
@@ -32,14 +34,11 @@ impl GaData {
             mutation_rate,
             truncation,
             rng,
+            exploit_selection: true,
+            exploit_repopulation: false
         }
     }
 
-    pub fn get_city(&self, index: usize) -> (i32,i32) {
-        (self.cities[index].0 as i32, self.cities[index].1 as i32)
-
-    }
-    
     pub fn get_iteration(&self) -> u32 {
         self.iteration
     }
@@ -48,9 +47,6 @@ impl GaData {
         self.cities.len()
     }
 
-    pub fn get_all_time_best(&self) -> &Candidate {
-        &self.all_time_best
-    }
     
     pub fn get_best_chromozone(&self, index: usize) -> (u32,u32) {
         self.cities[self.all_time_best.chromozones[index]]    
@@ -58,10 +54,6 @@ impl GaData {
 
     pub fn get_current_chromozone(&self, index: usize) -> (u32,u32) {
         self.cities[self.current_best.chromozones[index]]    
-    }
-
-    pub fn prepare_graph_data(&mut self) {
-        self.all_time_best.chromozones.push(self.all_time_best.chromozones[0]);
     }
 
     pub fn quick_sort(&mut self, low: isize, high: isize) {
@@ -131,48 +123,6 @@ impl GaData {
         res
     }
 
-    fn cycle_crossover(&mut self, parent_1: &Candidate, parent_2: &Candidate) -> Candidate {
-        let mut offspring = Candidate::empty();
-        offspring.chromozones = vec![99; self.cities.len()];
-        let mut hashset: HashSet<usize> = HashSet::new();
-        let mut off_hashset: HashSet<usize> = HashSet::new();
-        let mut hashmap_1: HashMap<usize,usize> = HashMap::new();
-        let mut hashmap_2: HashMap<usize,usize> = HashMap::new();
-        let mut p1: bool = true;
-        for i in 0..self.cities.len() {
-            hashmap_1.insert(parent_1.chromozones[i], i);
-            hashmap_2.insert(parent_2.chromozones[i], i);
-        }
-        let mut i = self.rng.gen_range(0..self.cities.len() as usize);
-        while !hashset.contains(&i) {
-            offspring.chromozones[i] = parent_1.chromozones[i];
-            off_hashset.insert(parent_1.chromozones[i]);
-            hashset.insert(i);
-            println!("{:?}",parent_1.chromozones);
-            if p1 {
-                i = *hashmap_2.get(&parent_1.chromozones[i]).unwrap();
-            }
-            else {
-                i = *hashmap_1.get(&parent_2.chromozones[i]).unwrap();
-            }
-            p1 = !p1;
-        }
-        let mut child_index = 0;
-        for k in &parent_2.chromozones {
-            while child_index < self.cities.len() && offspring.chromozones[child_index] == 99 {
-                child_index += 1;
-            }
-            if child_index >= self.cities.len() {
-                break;
-            }
-            if !off_hashset.contains(&k) {
-                offspring.chromozones[child_index] = *k;
-                child_index += 1;
-            }
-        }
-        offspring
-    }
-
     fn order_crossover(&mut self, parent_1: &Candidate, parent_2: &Candidate) -> Candidate {
         let mut i: usize;
         let mut j: usize;
@@ -240,15 +190,6 @@ impl GaData {
         offspring.chromozones.swap(i, j);
     }
 
-    pub fn explore(&mut self) {
-        let length = (self.population_count * self.truncation / 100) as usize;
-        let mut rng = rand::thread_rng();
-        let mut res: Vec<Candidate> = Vec::with_capacity(length);
-        for _ in 0..length {
-            res.push(self.population[rng.gen_range(0..self.population_count as usize)].clone());
-        }
-    }
-
     pub fn exploitative_repopulation(&mut self, selection: Vec<Candidate>) {
         for _ in 0..self.population_count * (100 - self.truncation) / 100 {
             // Fill the remaining 1 - turncation% of the population with offsprings
@@ -280,6 +221,22 @@ impl GaData {
         }
     }
 
+    pub fn toggle_selection_strategy(&mut self) {
+        self.exploit_selection = !self.exploit_selection;
+    }
+
+    pub fn toggle_repopulation_strategy(&mut self) {
+        self.exploit_repopulation = !self.exploit_repopulation;
+    }
+
+    pub fn get_selection_strategy(&self) -> bool {
+        self.exploit_selection 
+    }
+
+    pub fn get_repopulation_strategy(&self) -> bool {
+        self.exploit_repopulation 
+    }
+
     pub fn iterate(&mut self) {
         self.iteration += 1;
         self.quick_sort(0, self.population_count as isize - 1);
@@ -295,18 +252,28 @@ impl GaData {
         if self.population[self.population_count as usize - 1].fitness() > self.all_time_best.fitness() {
             self.all_time_best = self.population[self.population_count as usize - 1].clone();
         }
-        else {
-            self.population[self.population_count as usize - 1] = self.all_time_best.clone();
-        }
+        // else {
+        //     self.population[self.population_count as usize - 1] = self.all_time_best.clone();
+        // }
     
         let selection: Vec<Candidate>;
-        selection = self.truncation_selection();
-        // selection = self.roulette_wheel_selection();
-        self.population = Vec::with_capacity(self.population_count as usize);
-        // self.exploitative_repopulation(selection);
-        self.explorative_repopulation(selection);
-    }
 
+        if self.exploit_selection {
+            selection = self.truncation_selection();
+        }
+        else {
+            selection = self.roulette_wheel_selection();
+        }
+        self.population = Vec::with_capacity(self.population_count as usize);
+
+        if self.exploit_repopulation {
+            self.exploitative_repopulation(selection);
+        }
+        else {
+            self.explorative_repopulation(selection);
+        }
+    }
+    
     pub fn run(&mut self, iteration_limit: u32) {
         self.populate();
 
