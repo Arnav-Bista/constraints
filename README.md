@@ -24,24 +24,26 @@ This process is then repeated for a certain number of generations or until an en
 
 ## How do I use it myself?
 
+```
 OPTIONS
-    -h, --help\t- Show this help page
-    -g, --generate <NUMBER>\t- Generates random cities in a specified file.\
+    -h, --help - Show this help page
+    -g, --generate <NUMBER> - Generates random cities in a specified file.\
     If no directory is specified, it will generate the cities in ./data
-    -o, --output <STRING>\t- Specify output file.
-    -i, --input <STRING>\t- Specify input file. If no file is specified, it \
+    -o, --output <STRING> - Specify output file.
+    -i, --input <STRING> - Specify input file. If no file is specified, it \
     reads from ./data
 GENETIC PROCESS
-    -p, --population <NUMBER>\t- Specify the population (Default is 5000).
-    -m, --mutation <FLOAT>\t- Specify the mutation rate (Default is 0.5).
-    -t, --truncation <NUMBER>\t- Specify the truncation limit (Default if 30). This is % of the population that will be selected\
+    -p, --population <NUMBER> - Specify the population (Default is 5000).
+    -m, --mutation <FLOAT> - Specify the mutation rate (Default is 0.5).
+    -t, --truncation <NUMBER> - Specify the truncation limit (Default if 30). This is % of the population that will be selected\
     to populate the next generation
 UI CONTROLS
-    <SPACE>\t- Pause and unpause
-    <ESC>\t- Terminate the program
-    s\t- Toggle explorative and exploitative [s]election.
-    r\t- Toggle explorative and exploitative [r]epopulation.
-    i\t- [I]terate. Iterate by one step. Only works while paused.
+    <SPACE> - Pause and unpause
+    <ESC> - Terminate the program
+    s - Toggle explorative and exploitative [s]election.
+    r - Toggle explorative and exploitative [r]epopulation.
+    i - [I]terate. Iterate by one step. Only works while paused.
+```
 
 
 First generate the cities with the -g `number of cities` command. The output file can be specified with -o
