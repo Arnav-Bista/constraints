@@ -24,4 +24,34 @@ This process is then repeated for a certain number of generations or until an en
 
 ## How do I use it myself?
 
-Although the genetic algorithm itself is complete, polishing and visualization are the only remaining aspects left. As soon as they are done, this will be updated to show instructions on how to run the program as well as contain example runs.
+OPTIONS
+    -h, --help\t- Show this help page
+    -g, --generate <NUMBER>\t- Generates random cities in a specified file.\
+    If no directory is specified, it will generate the cities in ./data
+    -o, --output <STRING>\t- Specify output file.
+    -i, --input <STRING>\t- Specify input file. If no file is specified, it \
+    reads from ./data
+GENETIC PROCESS
+    -p, --population <NUMBER>\t- Specify the population (Default is 5000).
+    -m, --mutation <FLOAT>\t- Specify the mutation rate (Default is 0.5).
+    -t, --truncation <NUMBER>\t- Specify the truncation limit (Default if 30). This is % of the population that will be selected\
+    to populate the next generation
+UI CONTROLS
+    <SPACE>\t- Pause and unpause
+    <ESC>\t- Terminate the program
+    s\t- Toggle explorative and exploitative [s]election.
+    r\t- Toggle explorative and exploitative [r]epopulation.
+    i\t- [I]terate. Iterate by one step. Only works while paused.
+
+
+First generate the cities with the -g `number of cities` command. The output file can be specified with -o
+
+Then run the genetic algorithm. You can specify the input file with -i
+
+If you wish, you can custom set the parameters. Here is an example:
+
+`genetic_algorithm -p 10000 -m 0.4 -t 20`
+
+Which sets the population to 10000, mutation rate to 0.4 and truncation to 20% respectively.
+
+

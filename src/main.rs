@@ -1,6 +1,6 @@
 use getopts::Options;
 use std::env;
-use nannou::{prelude::*};
+use nannou::prelude::*;
 
 
 
