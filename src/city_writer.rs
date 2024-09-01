@@ -1,4 +1,4 @@
-use std::collections;
+use std::{collections, f64};
 use std::fs::File;
 use std::io::{BufWriter, BufReader, Write, Error, BufRead};
 use rand::Rng;
@@ -35,7 +35,7 @@ pub fn write_random_cities(file: String, number: usize) {
     println!("{}", "Done!".green());
 }
 
-pub fn read_random_cities(file: String) -> Result<Vec<(u32,u32)>, Error> {
+pub fn read_random_cities(file: String) -> Result<Vec<(f64,f64)>, Error> {
     let file = match File::open(file) {
         Ok(file) => file,
         Err(err) => {
@@ -44,7 +44,7 @@ pub fn read_random_cities(file: String) -> Result<Vec<(u32,u32)>, Error> {
         }
     };
     let buffer = BufReader::new(file);
-    let mut result_vec: Vec<(u32, u32)> = Vec::new();
+    let mut result_vec: Vec<(f64, f64)> = Vec::new();
 
     for (i,line) in buffer.lines().enumerate() {
         let line = match line {
@@ -55,15 +55,15 @@ pub fn read_random_cities(file: String) -> Result<Vec<(u32,u32)>, Error> {
             }
         };
         let line = line.split(",");
-        let mut array: [u32;2] = [0;2];
+        let mut array: [f64;2] = [0.0;2];
         let mut parsing_error: bool = false;
         for (j,num) in line.enumerate() {
-            let num: u32 = match num.parse() {
+            let num: f64 = match num.parse() {
                 Ok(num) => num,
                 Err(_) => {
-                    println!("Couldn't parse line {} into u32. Skipping",i);
+                    println!("Couldn't parse line {} into f64. Skipping",i);
                     parsing_error = true;
-                    0
+                    0.0
                 }
             };
             array[j] = num;
@@ -77,5 +77,3 @@ pub fn read_random_cities(file: String) -> Result<Vec<(u32,u32)>, Error> {
 
     Ok(result_vec)
 }
-
-
