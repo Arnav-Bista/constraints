@@ -12,13 +12,28 @@ pub struct TspCandidate {
 }
 
 impl Candidate<Vec<(f64, f64)>> for TspCandidate {
-    fn new(chromosome: Vec<(f64, f64)>) -> Self {
-        let mut chromosomes = chromosome;
+    fn new(chromosomes: Vec<(f64, f64)>) -> Self {
+        let fitness = TspCandidate::calculate_fitness(&chromosomes);
+        TspCandidate {
+            chromosomes,
+            fitness,
+        }
+    }
+
+    fn new_shuffle(chromosomes: Vec<(f64, f64)>) -> Self {
+        let mut chromosomes = chromosomes;
         chromosomes.shuffle(&mut thread_rng());
         let fitness = TspCandidate::calculate_fitness(&chromosomes);
         TspCandidate {
             chromosomes,
             fitness,
+        }
+    }
+
+    fn new_without_fitness(chromosomes: Vec<(f64, f64)>) -> Self {
+        TspCandidate {
+            chromosomes,
+            fitness: 0.0,
         }
     }
 
@@ -66,7 +81,7 @@ impl Candidate<Vec<(f64, f64)>> for TspCandidate {
             }
             child_chromosome[i] = other.chromosomes[j];
         }
-        TspCandidate::new(child_chromosome)
+        TspCandidate::new_without_fitness(child_chromosome)
     }
 
     /// TSP Fitness
@@ -81,6 +96,17 @@ impl Candidate<Vec<(f64, f64)>> for TspCandidate {
             let distance = ((x2 - x1).powi(2) + (y2 - y1).powi(2)).sqrt();
             fitness += distance;
         }
-        1.0 / fitness
+        // Add the end looping back to the start
+        let (x1, y1) = chromosomes.first().unwrap();
+        let (x2, y2) = chromosomes.last().unwrap();
+        let distance = ((x2 - x1).powi(2) + (y2 - y1).powi(2)).sqrt();
+        fitness += distance;
+
+        1000.0 / fitness
+    }
+
+    fn self_calculate_fitness(&mut self) {
+        let fitness = Self::calculate_fitness(&self.chromosomes);
+        self.fitness = fitness;
     }
 }

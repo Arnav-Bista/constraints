@@ -7,8 +7,6 @@ use super::candidate::Candidate;
 /// The second best has a probability of p * (p - 1) to be picked
 /// The third best has a probability of p * (p - 1)^2 to be picked
 /// and so on...
-///
-/// The top elitism_count are considered elite and are always picked
 pub fn tournament_selection<T, U>(
     k: usize,
     selection_target: usize,

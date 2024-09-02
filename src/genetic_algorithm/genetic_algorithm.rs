@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use std::{marker::PhantomData, process::exit};
 
 use rand::Rng;
 
@@ -25,23 +25,32 @@ where
     /// Create a new Genetic Algorithm with a population and mutation rate
     /// Offshore the initialization of the population to the user
     /// That depends on the specific problem
-    pub fn new(population: Vec<T>, mutation_rate: f64) -> Self {
+    pub fn new(
+        population: Vec<T>,
+        mutation_rate: f64,
+        selection_target: f64,
+        elitism: f64,
+    ) -> Self {
         let population_size = population.len();
         GA {
             chromosome_type: PhantomData,
             population,
             population_size,
             mutation_rate,
-            selection_target: (population_size as f64 * 0.5) as usize,
-            elitism_target: (population_size as f64 * 0.03) as usize,
+            selection_target: (population_size as f64 * selection_target) as usize,
+            elitism_target: (population_size as f64 * elitism) as usize,
         }
     }
 
     pub fn select(&self, method: SelectionMethod) -> Vec<T> {
         match method {
-            SelectionMethod::Tournament(k) => {
-                tournament_selection(k, self.selection_target, &self.population, 0.7, self.elitism_target)
-            } // SelectionMethod::Roulette => self.roulette_selection(),
+            SelectionMethod::Tournament(k) => tournament_selection(
+                k,
+                self.selection_target,
+                &self.population,
+                0.8,
+                self.elitism_target,
+            ), // SelectionMethod::Roulette => self.roulette_selection(),
         }
     }
 
@@ -65,6 +74,7 @@ where
             let parent_2 = GA::choose(&probabilities, rng.gen());
             let mut child = parent_1.crossover(&parent_2);
             child.mutate(self.mutation_rate);
+            child.self_calculate_fitness();
             new_population.push(child);
         }
 
@@ -88,8 +98,29 @@ where
             .clone()
     }
 
-    pub fn step(&mut self) {
-        let parents = self.select(SelectionMethod::Tournament(3));
+    /// It's basically the standard deviation of the fitness of the population
+    /// The second value is the difference between the best and the mean
+    fn calculate_genetic_diversity(&self) -> (f64, f64) {
+        let best = self
+            .population
+            .iter()
+            .map(|a| a.get_fitness())
+            .max_by(|a, b| a.total_cmp(b))
+            .unwrap();
+        let mean: f64 = self.population.iter().map(|a| a.get_fitness()).sum();
+        let mean = mean / self.population_size as f64;
+        let std_deviation: f64 = self
+            .population
+            .iter()
+            .map(|a| (a.get_fitness() - mean).powi(2))
+            .sum();
+        let std_deviation: f64 = std_deviation / self.population_size as f64;
+        let std_deviation = std_deviation.sqrt();
+        (std_deviation, best - mean)
+    }
+
+    pub fn step(&mut self, tournament_size: usize) {
+        let parents = self.select(SelectionMethod::Tournament(tournament_size));
         self.repopulate(parents);
         // Calculate best fitness of the population
         let fitness = self
@@ -98,6 +129,16 @@ where
             .map(|a| a.get_fitness())
             .max_by(|a, b| a.total_cmp(b))
             .unwrap();
-        println!("Best fitness: {}", fitness);
+        let (dev, diff) = self.calculate_genetic_diversity();
+        // Difference between the best fitness and average fitness
+        println!("Best fitness: {}\tDiversity: {}\tDifference {}", fitness, dev, diff);
+    }
+
+    pub fn best(&self) -> T {
+        self.population
+            .iter()
+            .max_by(|a, b| a.get_fitness().total_cmp(&b.get_fitness()))
+            .unwrap()
+            .clone()
     }
 }
