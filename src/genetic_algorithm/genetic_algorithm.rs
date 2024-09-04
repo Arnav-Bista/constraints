@@ -1,12 +1,15 @@
-use std::{marker::PhantomData, process::exit};
+use std::marker::PhantomData;
 
 use rand::Rng;
 
-use super::{candidate::Candidate, selection::tournament_selection};
+use super::{
+    candidate::Candidate,
+    selection::{roulette_wheel_selection, tournament_selection},
+};
 
 pub enum SelectionMethod {
     Tournament(usize),
-    // Roulette,
+    RouletteWheel,
 }
 
 pub struct GA<T, U> {
@@ -50,7 +53,12 @@ where
                 &self.population,
                 0.8,
                 self.elitism_target,
-            ), // SelectionMethod::Roulette => self.roulette_selection(),
+            ),
+            SelectionMethod::RouletteWheel => roulette_wheel_selection(
+                self.selection_target,
+                &self.population,
+                self.elitism_target,
+            ),
         }
     }
 
@@ -99,14 +107,8 @@ where
     }
 
     /// It's basically the standard deviation of the fitness of the population
-    /// The second value is the difference between the best and the mean
+    /// The second value is the mean
     fn calculate_genetic_diversity(&self) -> (f64, f64) {
-        let best = self
-            .population
-            .iter()
-            .map(|a| a.get_fitness())
-            .max_by(|a, b| a.total_cmp(b))
-            .unwrap();
         let mean: f64 = self.population.iter().map(|a| a.get_fitness()).sum();
         let mean = mean / self.population_size as f64;
         let std_deviation: f64 = self
@@ -116,11 +118,11 @@ where
             .sum();
         let std_deviation: f64 = std_deviation / self.population_size as f64;
         let std_deviation = std_deviation.sqrt();
-        (std_deviation, best - mean)
+        (std_deviation, mean)
     }
 
-    pub fn step(&mut self, tournament_size: usize) {
-        let parents = self.select(SelectionMethod::Tournament(tournament_size));
+    pub fn step_print(&mut self, selection_method: SelectionMethod) {
+        let parents = self.select(selection_method);
         self.repopulate(parents);
         // Calculate best fitness of the population
         let fitness = self
@@ -129,9 +131,27 @@ where
             .map(|a| a.get_fitness())
             .max_by(|a, b| a.total_cmp(b))
             .unwrap();
-        let (dev, diff) = self.calculate_genetic_diversity();
-        // Difference between the best fitness and average fitness
-        println!("Best fitness: {}\tDiversity: {}\tDifference {}", fitness, dev, diff);
+        let (dev, mean) = self.calculate_genetic_diversity();
+        println!(
+            "Best fitness: {}\tDiversity: {}\tMean {}",
+            fitness, dev, mean
+        );
+    }
+
+    /// Step through the genetic algorithm
+    /// Returns the (`fitness`, `standard deviation`, `best - mean fitness`)
+    pub fn step(&mut self, selection_method: SelectionMethod) -> (f64, f64, f64) {
+        let parents = self.select(selection_method);
+        self.repopulate(parents);
+        // Calculate best fitness of the population
+        let fitness = self
+            .population
+            .iter()
+            .map(|a| a.get_fitness())
+            .max_by(|a, b| a.total_cmp(b))
+            .unwrap();
+        let (dev, mean) = self.calculate_genetic_diversity();
+        (fitness, dev, mean)
     }
 
     pub fn best(&self) -> T {
@@ -140,5 +160,21 @@ where
             .max_by(|a, b| a.get_fitness().total_cmp(&b.get_fitness()))
             .unwrap()
             .clone()
+    }
+}
+
+impl<T, U> Clone for GA<T, U>
+where
+    T: Candidate<U> + Clone,
+{
+    fn clone(&self) -> Self {
+        GA {
+            chromosome_type: PhantomData,
+            population: self.population.clone(),
+            population_size: self.population_size,
+            mutation_rate: self.mutation_rate,
+            selection_target: self.selection_target,
+            elitism_target: self.elitism_target,
+        }
     }
 }
