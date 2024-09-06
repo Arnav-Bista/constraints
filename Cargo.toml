@@ -7,8 +7,10 @@ edition = "2021"
 
 [dependencies]
 colored = "2.0.0"
+eframe = "0.28.1"
+egui = "0.28.1"
+egui_plot = "0.28.1"
 getopts = "0.2.21"
 getrandom = "0.2.10"
-nannou = "0.18.1"
 rand = "0.8.5"
 rand_distr = "0.4.3"
