@@ -4,7 +4,7 @@ use egui_plot::{Corner, Legend, Line, Plot, PlotItem, PlotPoints};
 use crate::{
     genetic_algorithm::{
         candidate::Candidate,
-        genetic_algorithm::{SelectionMethod, GA},
+        genetic_algorithm::GA, selection::SelectionMethod,
     },
     tsp::TspCandidate,
 };

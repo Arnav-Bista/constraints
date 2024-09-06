@@ -3,7 +3,7 @@ use genetic_algorithm::{candidate::Candidate, genetic_algorithm::GA};
 use tsp::TspCandidate;
 use visualisation::plotting::generation_fitness_plot_tsp;
 
-use crate::genetic_algorithm::genetic_algorithm::SelectionMethod;
+use crate::genetic_algorithm::selection::SelectionMethod;
 
 mod genetic_algorithm;
 mod tsp;
@@ -18,7 +18,7 @@ pub fn main() {
     for _ in 0..popualtion {
         initial_population.push(TspCandidate::new_shuffle(initial.clone()));
     }
-    let ga = GA::new(initial_population, 0.07, 0.7, 0.01);
+    let ga = GA::new(initial_population, 0.07, 0.1, 0.00);
     println!("Starting genetic algorithm");
     generation_fitness_plot_tsp(ga, 1000, SelectionMethod::RouletteWheel);
     // for _ in 0..6000 {

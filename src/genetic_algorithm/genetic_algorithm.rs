@@ -4,13 +4,9 @@ use rand::Rng;
 
 use super::{
     candidate::Candidate,
-    selection::{roulette_wheel_selection, tournament_selection},
+    selection::{roulette_wheel_selection, tournament_selection, SelectionMethod},
 };
 
-pub enum SelectionMethod {
-    Tournament(usize),
-    RouletteWheel,
-}
 
 pub struct GA<T, U> {
     chromosome_type: PhantomData<U>,

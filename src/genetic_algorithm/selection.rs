@@ -2,6 +2,12 @@ use rand::Rng;
 
 use super::candidate::Candidate;
 
+
+pub enum SelectionMethod {
+    Tournament(usize),
+    RouletteWheel,
+}
+
 /// Tournament selection
 /// For a K way tournament selection, the best candidate has a probability of p to be picked
 /// The second best has a probability of p * (p - 1) to be picked
