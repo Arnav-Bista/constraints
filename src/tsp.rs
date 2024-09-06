@@ -2,7 +2,9 @@ use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rand::Rng;
 
-use crate::genetic_algorithm::candidate::Candidate;
+use crate::candidate::Candidate;
+use crate::genetic_algorithm::genetic_algorithm_candidate::GaCandidate;
+use crate::simualted_annealing::simulated_annealing_candidate::SaCandidate;
 
 #[derive(Clone)]
 pub struct TspCandidate {
@@ -45,6 +47,34 @@ impl Candidate<Vec<(f64, f64)>> for TspCandidate {
         &self.chromosomes
     }
 
+    /// TSP Fitness
+    /// Distance between each city in the order of the chromosome
+    /// 1 / (sum of distances) is the fitness
+    /// Try to maximize the fitness
+    fn calculate_fitness(chromosomes: &Vec<(f64, f64)>) -> f64 {
+        let mut fitness = 0.0;
+        for i in 0..chromosomes.len() - 1 {
+            let (x1, y1) = chromosomes[i];
+            let (x2, y2) = chromosomes[i + 1];
+            let distance = ((x2 - x1).powi(2) + (y2 - y1).powi(2)).sqrt();
+            fitness += distance;
+        }
+        // Add the end looping back to the start
+        let (x1, y1) = chromosomes.first().unwrap();
+        let (x2, y2) = chromosomes.last().unwrap();
+        let distance = ((x2 - x1).powi(2) + (y2 - y1).powi(2)).sqrt();
+        fitness += distance;
+
+        1000.0 / fitness
+    }
+
+    fn self_calculate_fitness(&mut self) {
+        let fitness = Self::calculate_fitness(&self.chromosomes);
+        self.fitness = fitness;
+    }
+}
+
+impl GaCandidate for TspCandidate {
     /// Mutate the chromosome by swapping two random cities
     /// with a probability of mutation_rate
     ///
@@ -83,30 +113,43 @@ impl Candidate<Vec<(f64, f64)>> for TspCandidate {
         }
         TspCandidate::new_without_fitness(child_chromosome)
     }
+}
 
-    /// TSP Fitness
-    /// Distance between each city in the order of the chromosome
-    /// 1 / (sum of distances) is the fitness
-    /// Try to maximize the fitness
-    fn calculate_fitness(chromosomes: &Vec<(f64, f64)>) -> f64 {
-        let mut fitness = 0.0;
-        for i in 0..chromosomes.len() - 1 {
-            let (x1, y1) = chromosomes[i];
-            let (x2, y2) = chromosomes[i + 1];
-            let distance = ((x2 - x1).powi(2) + (y2 - y1).powi(2)).sqrt();
-            fitness += distance;
+enum NeighbourMethod {
+    Swap,
+    Invert,
+}
+
+impl NeighbourMethod {
+    fn get_random() -> Self {
+        match rand::thread_rng().gen_range(0..2) {
+            0 => NeighbourMethod::Swap,
+            _ => NeighbourMethod::Invert,
         }
-        // Add the end looping back to the start
-        let (x1, y1) = chromosomes.first().unwrap();
-        let (x2, y2) = chromosomes.last().unwrap();
-        let distance = ((x2 - x1).powi(2) + (y2 - y1).powi(2)).sqrt();
-        fitness += distance;
-
-        1000.0 / fitness
     }
+}
 
-    fn self_calculate_fitness(&mut self) {
-        let fitness = Self::calculate_fitness(&self.chromosomes);
-        self.fitness = fitness;
+impl SaCandidate for TspCandidate {
+    fn get_neighbour(&self) -> Self {
+        let mut rng = rand::thread_rng();
+        let method = NeighbourMethod::get_random();
+        let i = rng.gen_range(0..self.chromosomes.len());
+        let j = rng.gen_range(0..self.chromosomes.len());
+        match method {
+            NeighbourMethod::Swap => {
+                let mut neighbour = self.clone();
+                neighbour.chromosomes.swap(i, j);
+                neighbour.self_calculate_fitness();
+                neighbour
+            }
+            NeighbourMethod::Invert => {
+                let mut neighbour = self.clone();
+                let start = i.min(j);
+                let end = i.max(j);
+                neighbour.chromosomes[start..=end].reverse();
+                neighbour.self_calculate_fitness();
+                neighbour
+            }
+        }
     }
 }

@@ -1,6 +1,8 @@
 use rand::Rng;
 
-use super::candidate::Candidate;
+use crate::candidate::Candidate;
+
+use super::genetic_algorithm_candidate::GaCandidate;
 
 
 pub enum SelectionMethod {
@@ -21,7 +23,7 @@ pub fn tournament_selection<T, U>(
     elitism_count: usize,
 ) -> Vec<T>
 where
-    T: Candidate<U> + Clone,
+    T: Candidate<U> + GaCandidate + Clone,
 {
     let mut rng = rand::thread_rng();
     let mut selected: Vec<T> = Vec::with_capacity(selection_target);

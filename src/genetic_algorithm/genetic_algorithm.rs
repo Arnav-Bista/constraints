@@ -2,11 +2,9 @@ use std::marker::PhantomData;
 
 use rand::Rng;
 
-use super::{
-    candidate::Candidate,
-    selection::{roulette_wheel_selection, tournament_selection, SelectionMethod},
-};
+use crate::candidate::Candidate;
 
+use super::{genetic_algorithm_candidate::GaCandidate, selection::{roulette_wheel_selection, tournament_selection, SelectionMethod}};
 
 pub struct GA<T, U> {
     chromosome_type: PhantomData<U>,
@@ -19,7 +17,7 @@ pub struct GA<T, U> {
 
 impl<T, U> GA<T, U>
 where
-    T: Candidate<U> + Clone,
+    T: Candidate<U> + GaCandidate + Clone,
 {
     /// Create a new Genetic Algorithm with a population and mutation rate
     /// Offshore the initialization of the population to the user
@@ -117,22 +115,22 @@ where
         (std_deviation, mean)
     }
 
-    pub fn step_print(&mut self, selection_method: SelectionMethod) {
-        let parents = self.select(selection_method);
-        self.repopulate(parents);
-        // Calculate best fitness of the population
-        let fitness = self
-            .population
-            .iter()
-            .map(|a| a.get_fitness())
-            .max_by(|a, b| a.total_cmp(b))
-            .unwrap();
-        let (dev, mean) = self.calculate_genetic_diversity();
-        println!(
-            "Best fitness: {}\tDiversity: {}\tMean {}",
-            fitness, dev, mean
-        );
-    }
+    // pub fn step_print(&mut self, selection_method: SelectionMethod) {
+    //     let parents = self.select(selection_method);
+    //     self.repopulate(parents);
+    //     // Calculate best fitness of the population
+    //     let fitness = self
+    //         .population
+    //         .iter()
+    //         .map(|a| a.get_fitness())
+    //         .max_by(|a, b| a.total_cmp(b))
+    //         .unwrap();
+    //     let (dev, mean) = self.calculate_genetic_diversity();
+    //     println!(
+    //         "Best fitness: {}\tDiversity: {}\tMean {}",
+    //         fitness, dev, mean
+    //     );
+    // }
 
     /// Step through the genetic algorithm
     /// Returns the (`fitness`, `standard deviation`, `best - mean fitness`)
@@ -161,7 +159,7 @@ where
 
 impl<T, U> Clone for GA<T, U>
 where
-    T: Candidate<U> + Clone,
+    T: Candidate<U> + GaCandidate + Clone,
 {
     fn clone(&self) -> Self {
         GA {

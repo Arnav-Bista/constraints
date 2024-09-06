@@ -6,6 +6,4 @@ pub trait Candidate<U> {
     fn self_calculate_fitness(&mut self);
     fn calculate_fitness(chromosomes: &U) -> f64;
     fn get_chromosome(&self) -> &U;
-    fn mutate(&mut self, mutation_rate: f64);
-    fn crossover(&self, other: &Self) -> Self;
 }
