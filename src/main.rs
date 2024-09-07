@@ -1,11 +1,5 @@
-use city_writer::{read_random_cities, write_random_cities};
-use genetic_algorithm::genetic_algorithm::GA;
 use interactive_cli::start_interactive_cli;
-use simualted_annealing::simulated_annealing::SimulatedAnnealing;
-use tsp::TspCandidate;
-use visualisation::plotting::{generation_fitness_plot_tsp, sa_fitness_plot_tsp};
 
-use crate::{candidate::Candidate, genetic_algorithm::selection::SelectionMethod};
 
 mod candidate;
 mod city_writer;

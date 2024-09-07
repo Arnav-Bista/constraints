@@ -18,6 +18,10 @@ pub struct RealTimePlotTSP {
 
 impl RealTimePlotTSP {
     const SIZE: (f32, f32) = (800.0, 400.0);
+    const PLOT_SIZE: (f32, f32) = (
+        Self::SIZE.0 / 2.0 - Self::SIZE.0 * 0.03,
+        Self::SIZE.1 - Self::SIZE.1 * 0.2,
+    );
 
     pub fn new(
         ga: GA<TspCandidate, Vec<(f64, f64)>>,
@@ -40,14 +44,11 @@ impl eframe::App for RealTimePlotTSP {
         self.last_iteration += 1;
         self.ga_data.push(data);
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            ui.heading("Genetic Algorithm");
-        });
-        egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
             ui.heading(format!("Generation: {}", self.last_iteration));
         });
         egui::CentralPanel::default().show(ctx, |ui| {
             egui::Grid::new("grid").show(ui, |ui| {
-                ui.label("Fitness, Std Deviation and Best - Mean Fitness");
+                ui.label("Fitness & Mean Fitness");
                 ui.label("Best Solution");
                 ui.end_row();
 
@@ -58,7 +59,7 @@ impl eframe::App for RealTimePlotTSP {
                             .allow_drag(false)
                             .allow_drag(false)
                             .show_axes(true)
-                            .min_size(Vec2::new(Self::SIZE.0 / 2.0 - Self::SIZE.0 * 0.1, Self::SIZE.1 - Self::SIZE.1 * 0.1))
+                            .min_size(Vec2::new(Self::PLOT_SIZE.0, Self::PLOT_SIZE.1))
                             .show(ui, |plot_ui| {
                                 plot_ui.line(
                                     Line::new(PlotPoints::new(
@@ -70,16 +71,6 @@ impl eframe::App for RealTimePlotTSP {
                                     ))
                                     .name("Best Fitness"),
                                 );
-                                // plot_ui.line(
-                                //     Line::new(PlotPoints::new(
-                                //         self.ga_data
-                                //             .iter()
-                                //             .enumerate()
-                                //             .map(|(generation, data)| [generation as f64, data.1])
-                                //             .collect(),
-                                //     ))
-                                //     .name("Std Deviation"),
-                                // );
                                 plot_ui.line(
                                     Line::new(PlotPoints::new(
                                         self.ga_data
@@ -103,7 +94,7 @@ impl eframe::App for RealTimePlotTSP {
                         plot.allow_drag(false)
                             .allow_drag(false)
                             .show_axes(true)
-                            .min_size(Vec2::new(Self::SIZE.0 / 2.0 - Self::SIZE.0 * 0.1, Self::SIZE.1 - Self::SIZE.1 * 0.1))
+                            .min_size(Vec2::new(Self::PLOT_SIZE.0, Self::PLOT_SIZE.1))
                             .show(ui, |plot_ui| {
                                 plot_ui.line(
                                     Line::new(PlotPoints::new(
@@ -131,6 +122,10 @@ pub struct RealTimePlotSA {
 
 impl RealTimePlotSA {
     const SIZE: (f32, f32) = (800.0, 400.0);
+    const PLOT_SIZE: (f32, f32) = (
+        Self::SIZE.0 / 2.0 - Self::SIZE.0 * 0.03,
+        Self::SIZE.1 - Self::SIZE.1 * 0.2,
+    );
 
     pub fn new(
         sa: SimulatedAnnealing<TspCandidate, Vec<(f64, f64)>>,
@@ -154,9 +149,6 @@ impl eframe::App for RealTimePlotSA {
         self.last_iteration += 1;
         self.sa_data.push(data.get_fitness());
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            ui.heading("Genetic Algorithm");
-        });
-        egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
             ui.heading(format!("Generation: {}", self.last_iteration));
         });
         egui::CentralPanel::default().show(ctx, |ui| {
@@ -172,7 +164,7 @@ impl eframe::App for RealTimePlotSA {
                             .allow_drag(false)
                             .allow_drag(false)
                             .show_axes(true)
-                            .min_size(Vec2::new(Self::SIZE.0 / 2.0, Self::SIZE.1))
+                            .min_size(Vec2::new(Self::PLOT_SIZE.0, Self::PLOT_SIZE.1))
                             .show(ui, |plot_ui| {
                                 plot_ui.line(
                                     Line::new(PlotPoints::new(
@@ -197,7 +189,7 @@ impl eframe::App for RealTimePlotSA {
                         plot.allow_drag(false)
                             .allow_drag(false)
                             .show_axes(true)
-                            .min_size(Vec2::new(Self::SIZE.0 / 2.0, Self::SIZE.1))
+                            .min_size(Vec2::new(Self::PLOT_SIZE.0, Self::PLOT_SIZE.1))
                             .show(ui, |plot_ui| {
                                 plot_ui.line(
                                     Line::new(PlotPoints::new(
