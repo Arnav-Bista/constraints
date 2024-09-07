@@ -4,7 +4,7 @@ use std::io::{BufWriter, BufReader, Write, Error, BufRead};
 use rand::Rng;
 use colored::Colorize;
 
-pub fn write_random_cities(file: String, number: usize) {
+pub fn write_random_cities(file: String, number: usize, max_coords: u32) {
     let mut rng = rand::thread_rng();
     let file = match File::create(file) {
         Ok(file) => file,
@@ -17,12 +17,12 @@ pub fn write_random_cities(file: String, number: usize) {
     let mut hashset: collections::HashSet<(u32,u32)> = collections::HashSet::new();
     let mut i = 0;
     while i < number {
-        let numbers = (rng.gen_range(0..100),rng.gen_range(0..100));
+        let numbers = (rng.gen_range(0..max_coords),rng.gen_range(0..max_coords));
         if hashset.contains(&numbers) {
             continue;
         }
         hashset.insert(numbers);
-        let line = format!("{},{}\n",rng.gen_range(0..100),rng.gen_range(0..100));
+        let line = format!("{},{}\n",numbers.0,numbers.1);
         match buffer.write(line.as_bytes()) {
             Ok(_) => (),
             Err(err) => {

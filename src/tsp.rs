@@ -104,8 +104,10 @@ impl GaCandidate for TspCandidate {
     fn crossover(&self, other: &Self) -> Self {
         let mut rng = rand::thread_rng();
         let mut child_chromosome = vec![(-1.0, -1.0); self.chromosomes.len()];
-        let start = rng.gen_range(0..self.chromosomes.len());
-        let end = rng.gen_range(start..self.chromosomes.len());
+        let i = rng.gen_range(0..self.chromosomes.len());
+        let j = rng.gen_range(0..self.chromosomes.len());
+        let start = i.min(j);
+        let end = i.max(j);
         for i in start..end {
             child_chromosome[i] = self.chromosomes[i];
         }

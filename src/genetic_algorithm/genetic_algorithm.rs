@@ -4,7 +4,10 @@ use rand::Rng;
 
 use crate::candidate::Candidate;
 
-use super::{genetic_algorithm_candidate::GaCandidate, selection::{roulette_wheel_selection, tournament_selection, SelectionMethod}};
+use super::{
+    genetic_algorithm_candidate::GaCandidate,
+    selection::{roulette_wheel_selection, tournament_selection, SelectionMethod},
+};
 
 pub struct GA<T, U> {
     chromosome_type: PhantomData<U>,
