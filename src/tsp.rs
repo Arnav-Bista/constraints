@@ -75,16 +75,27 @@ impl Candidate<Vec<(f64, f64)>> for TspCandidate {
 }
 
 impl GaCandidate for TspCandidate {
-    /// Mutate the chromosome by swapping two random cities
-    /// with a probability of mutation_rate
-    ///
-    /// This chance is for each city in the chromosome
+    /// Mutate the chromosome with a probability of mutation_rate
     fn mutate(&mut self, mutation_rate: f64) {
         let mut rng = rand::thread_rng();
-        for i in 0..self.chromosomes.len() {
-            if rng.gen::<f64>() < mutation_rate {
-                let j = rng.gen_range(0..self.chromosomes.len());
-                self.chromosomes.swap(i, j);
+        if rng.gen::<f64>() > mutation_rate {
+            return;
+        }
+        let method = NeighbourMethod::get_random();
+        let i = rng.gen_range(0..self.chromosomes.len());
+        let j = rng.gen_range(0..self.chromosomes.len());
+        match method {
+            NeighbourMethod::Swap => {
+                let mut mutated = self.clone();
+                mutated.chromosomes.swap(i, j);
+                self.chromosomes = mutated.chromosomes;
+            }
+            NeighbourMethod::Invert => {
+                let mut mutated = self.clone();
+                let start = i.min(j);
+                let end = i.max(j);
+                mutated.chromosomes[start..=end].reverse();
+                self.chromosomes = mutated.chromosomes;
             }
         }
     }

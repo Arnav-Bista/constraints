@@ -58,7 +58,7 @@ impl eframe::App for RealTimePlotTSP {
                             .allow_drag(false)
                             .allow_drag(false)
                             .show_axes(true)
-                            .min_size(Vec2::new(Self::SIZE.0 / 2.0, Self::SIZE.1))
+                            .min_size(Vec2::new(Self::SIZE.0 / 2.0 - Self::SIZE.0 * 0.1, Self::SIZE.1 - Self::SIZE.1 * 0.1))
                             .show(ui, |plot_ui| {
                                 plot_ui.line(
                                     Line::new(PlotPoints::new(
@@ -103,7 +103,7 @@ impl eframe::App for RealTimePlotTSP {
                         plot.allow_drag(false)
                             .allow_drag(false)
                             .show_axes(true)
-                            .min_size(Vec2::new(Self::SIZE.0 / 2.0, Self::SIZE.1))
+                            .min_size(Vec2::new(Self::SIZE.0 / 2.0 - Self::SIZE.0 * 0.1, Self::SIZE.1 - Self::SIZE.1 * 0.1))
                             .show(ui, |plot_ui| {
                                 plot_ui.line(
                                     Line::new(PlotPoints::new(
