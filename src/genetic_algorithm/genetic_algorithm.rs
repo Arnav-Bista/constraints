@@ -136,7 +136,6 @@ where
     // }
 
     /// Step through the genetic algorithm
-    /// Returns the (`fitness`, `standard deviation`, `best - mean fitness`)
     pub fn step(&mut self, selection_method: SelectionMethod) -> (f64, f64, f64) {
         let parents = self.select(selection_method);
         self.repopulate(parents);

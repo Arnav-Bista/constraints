@@ -70,16 +70,16 @@ impl eframe::App for RealTimePlotTSP {
                                     ))
                                     .name("Best Fitness"),
                                 );
-                                plot_ui.line(
-                                    Line::new(PlotPoints::new(
-                                        self.ga_data
-                                            .iter()
-                                            .enumerate()
-                                            .map(|(generation, data)| [generation as f64, data.1])
-                                            .collect(),
-                                    ))
-                                    .name("Std Deviation"),
-                                );
+                                // plot_ui.line(
+                                //     Line::new(PlotPoints::new(
+                                //         self.ga_data
+                                //             .iter()
+                                //             .enumerate()
+                                //             .map(|(generation, data)| [generation as f64, data.1])
+                                //             .collect(),
+                                //     ))
+                                //     .name("Std Deviation"),
+                                // );
                                 plot_ui.line(
                                     Line::new(PlotPoints::new(
                                         self.ga_data
